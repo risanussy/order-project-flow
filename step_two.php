@@ -128,6 +128,9 @@ $project = $stmt->fetch();
             <li class="nav-item">
                 <a class="nav-link disabled" aria-disabled="true">Step 4</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" aria-disabled="true">Step 5</a>
+            </li>
         </ul>
         <br>
         <div class="w-100 card shadow py-5 px-2">

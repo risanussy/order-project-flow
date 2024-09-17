@@ -61,6 +61,25 @@ INSERT INTO `pekerjaan` (`id`, `nama_pekerjaan`, `jumlah_total`, `sudah_dikerjak
 	(3, 'qwerty 1', 123, 123, 'Selesai', 1, 2, '2024-09-07 09:22:25', '2024-09-07 11:37:14'),
 	(4, 'qwerty 2', 2, 2, 'Selesai', 1, 2, '2024-09-07 09:22:25', '2024-09-07 11:37:14');
 
+-- Dumping structure for table order_projectflow.pengeluaran
+CREATE TABLE IF NOT EXISTS `pengeluaran` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `project_id` int DEFAULT NULL,
+  `nama_barang` varchar(255) DEFAULT NULL,
+  `qty` int DEFAULT NULL,
+  `harga` decimal(10,2) DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `project_id` (`project_id`),
+  CONSTRAINT `pengeluaran_ibfk_1` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Dumping data for table order_projectflow.pengeluaran: ~3 rows (approximately)
+INSERT INTO `pengeluaran` (`id`, `project_id`, `nama_barang`, `qty`, `harga`, `updated_at`) VALUES
+	(1, 2, 'qwerty', 12, 1000.00, '2024-09-17 19:49:43'),
+	(2, 2, 'qwerty', 1, 100.00, '2024-09-17 19:49:43'),
+	(3, 2, 'qwerty', 1, 1.00, '2024-09-17 19:49:43');
+
 -- Dumping structure for table order_projectflow.persiapan
 CREATE TABLE IF NOT EXISTS `persiapan` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -100,7 +119,7 @@ CREATE TABLE IF NOT EXISTS `project` (
 -- Dumping data for table order_projectflow.project: ~0 rows (approximately)
 INSERT INTO `project` (`id`, `nama_project`, `deskripsi`, `code`, `user_id`, `catatan_persiapan`, `catatan_pekerjaan`, `catatan_finish`, `created_at`, `updated_at`) VALUES
 	(1, 'qwerty', 'qwerty qwerty', 'Selesai', 2, 'oke', 'qwerty', 'qwerty', '2024-09-07 09:22:25', '2024-09-07 11:39:56'),
-	(2, 'qwerty', 'qwerty', 'Berlangsung', 2, '', '', '', '2024-09-07 09:42:35', '2024-09-07 09:42:35');
+	(2, 'qwerty', 'qwerty', 'Selesai', 2, '', '', '', '2024-09-07 09:42:35', '2024-09-17 19:19:33');
 
 -- Dumping structure for table order_projectflow.riwayat
 CREATE TABLE IF NOT EXISTS `riwayat` (
@@ -114,9 +133,9 @@ CREATE TABLE IF NOT EXISTS `riwayat` (
   PRIMARY KEY (`id`),
   KEY `project_id` (`project_id`),
   CONSTRAINT `riwayat_ibfk_1` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Dumping data for table order_projectflow.riwayat: ~25 rows (approximately)
+-- Dumping data for table order_projectflow.riwayat: ~32 rows (approximately)
 INSERT INTO `riwayat` (`id`, `project_id`, `edited`, `status`, `row_status`, `created_at`, `updated_at`) VALUES
 	(1, 1, 'Mengubah status persiapan ID 5 menjadi Siap', 1, 1, '2024-09-07 10:57:41', '2024-09-07 10:57:41'),
 	(2, 1, 'Mengubah catatan persiapan proyek', 1, 1, '2024-09-07 10:57:41', '2024-09-07 10:57:41'),
@@ -142,7 +161,15 @@ INSERT INTO `riwayat` (`id`, `project_id`, `edited`, `status`, `row_status`, `cr
 	(22, 1, 'Mengubah pekerjaan ID 4 menjadi status Selesai, sudah dikerjakan: 2', 1, 1, '2024-09-07 11:37:14', '2024-09-07 11:37:14'),
 	(23, 1, 'Menambahkan foto pekerjaan finishing: Aesthetic Laptop Background Pink Wallpaper Cute Desktop.jpg', 1, 1, '2024-09-07 11:37:14', '2024-09-07 11:37:14'),
 	(24, 1, 'Menambahkan foto pekerjaan finishing: Aesthetic Laptop Background Pink Wallpaper Cute Desktop.jpg', 1, 1, '2024-09-07 11:37:14', '2024-09-07 11:37:14'),
-	(25, 1, 'Menambahkan foto persiapan: Aesthetic Laptop Background Pink Wallpaper Cute Desktop.jpg', 1, 1, '2024-09-07 11:39:56', '2024-09-07 11:39:56');
+	(25, 1, 'Menambahkan foto persiapan: Aesthetic Laptop Background Pink Wallpaper Cute Desktop.jpg', 1, 1, '2024-09-07 11:39:56', '2024-09-07 11:39:56'),
+	(26, 2, 'Mengubah catatan persiapan proyek', 1, 1, '2024-09-17 18:56:30', '2024-09-17 18:56:30'),
+	(27, 2, 'Mengubah status persiapan ID 7 menjadi Belum Siap', 1, 1, '2024-09-17 19:19:33', '2024-09-17 19:19:33'),
+	(28, 2, 'Mengubah status persiapan ID 7 menjadi Belum Siap', 1, 1, '2024-09-17 19:20:39', '2024-09-17 19:20:39'),
+	(29, 2, 'Mengubah status persiapan ID 7 menjadi Belum Siap', 1, 1, '2024-09-17 19:20:44', '2024-09-17 19:20:44'),
+	(30, 2, 'Mengubah status persiapan ID 7 menjadi Belum Siap', 1, 1, '2024-09-17 19:21:07', '2024-09-17 19:21:07'),
+	(31, 2, 'Mengubah status persiapan ID 7 menjadi Belum Siap', 1, 1, '2024-09-17 19:21:30', '2024-09-17 19:21:30'),
+	(32, 2, 'Mengubah status persiapan ID 7 menjadi Belum Siap', 1, 1, '2024-09-17 19:23:04', '2024-09-17 19:23:04'),
+	(33, 2, 'Mengubah status persiapan ID 7 menjadi Belum Siap', 1, 1, '2024-09-17 19:44:29', '2024-09-17 19:44:29');
 
 -- Dumping structure for table order_projectflow.user
 CREATE TABLE IF NOT EXISTS `user` (

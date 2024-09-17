@@ -18,7 +18,7 @@ if (!$project_id) {
 $no_index_1 = 1;
 $no_index_2 = 1;
 
-// Ambil data project, persiapan, dan pekerjaan berdasarkan project_id
+// Ambil data project, persiapan, pekerjaan, dan pengeluaran berdasarkan project_id
 $stmt = $pdo->prepare("SELECT * FROM project WHERE id = :project_id");
 $stmt->execute(['project_id' => $project_id]);
 $project = $stmt->fetch();
@@ -30,6 +30,10 @@ $persiapan_list = $stmt->fetchAll();
 $stmt = $pdo->prepare("SELECT * FROM pekerjaan WHERE project_id = :project_id");
 $stmt->execute(['project_id' => $project_id]);
 $pekerjaan_list = $stmt->fetchAll();
+
+$stmt = $pdo->prepare("SELECT * FROM pengeluaran WHERE project_id = :project_id ORDER BY id DESC");
+$stmt->execute(['project_id' => $project_id]);
+$pengeluaran_list = $stmt->fetchAll();
 
 // Ambil data dokumentasi berdasarkan status
 $stmt = $pdo->prepare("SELECT * FROM dokumentasi WHERE project_id = :project_id AND status = :status");
@@ -50,10 +54,6 @@ $dokumentasi_finishing = $stmt->fetchAll();
 $stmt->execute(['project_id' => $project_id, 'status' => 4]);
 $dokumentasi_serah_terima = $stmt->fetchAll();
 
-// Ambil data riwayat berdasarkan project_id
-$stmt = $pdo->prepare("SELECT * FROM riwayat WHERE project_id = :project_id ORDER BY updated_at DESC");
-$stmt->execute(['project_id' => $project_id]);
-$riwayat_list = $stmt->fetchAll();
 ?>
 
 <!doctype html>
@@ -88,85 +88,6 @@ $riwayat_list = $stmt->fetchAll();
     <div class="container mt-5">
         <h3>Detail Project: <?= htmlspecialchars($project['nama_project']) ?></h3>
         <p><strong>Deskripsi:</strong> <?= htmlspecialchars($project['deskripsi']) ?></p>
-        <p><strong>Catatan Persiapan:</strong> <?= $project['catatan_persiapan']; ?></p>
-        <p><strong>Catatan Pekerjaan:</strong> <?= $project['catatan_pekerjaan']; ?></p>
-        <p><strong>Catatan Finishing:</strong> <?= $project['catatan_finish']; ?></p>
-
-        <!-- Bagian Foto Dokumentasi Persiapan -->
-        <h4 class="mt-4">Dokumentasi Persiapan</h4>
-        <div class="row">
-            <?php foreach ($dokumentasi_persiapan as $file): ?>
-                <div class="col-md-3 mb-3">
-                    <?php 
-                    $file_extension = pathinfo($file['foto'], PATHINFO_EXTENSION);
-                    if (in_array($file_extension, ['mp4', 'mov'])) { ?>
-                        <video width="300" controls>
-                            <source src="../<?= htmlspecialchars($file['foto']) ?>" type="video/<?= $file_extension ?>">
-                            Your browser does not support the video tag.
-                        </video>
-                    <?php } else { ?>
-                        <img src="../<?= htmlspecialchars($file['foto']) ?>" class="img-thumbnail" alt="Dokumentasi Persiapan" width="300px">
-                    <?php } ?>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- Bagian Foto Dokumentasi Pekerjaan -->
-        <h4 class="mt-4">Dokumentasi Pekerjaan</h4>
-        <div class="row">
-            <?php foreach ($dokumentasi_pekerjaan as $file): ?>
-                <div class="col-md-3 mb-3">
-                    <?php 
-                    $file_extension = pathinfo($file['foto'], PATHINFO_EXTENSION);
-                    if (in_array($file_extension, ['mp4', 'mov'])) { ?>
-                        <video width="300" controls>
-                            <source src="../<?= htmlspecialchars($file['foto']) ?>" type="video/<?= $file_extension ?>">
-                            Your browser does not support the video tag.
-                        </video>
-                    <?php } else { ?>
-                        <img src="../<?= htmlspecialchars($file['foto']) ?>" class="img-thumbnail" alt="Dokumentasi Pekerjaan" width="300px">
-                    <?php } ?>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- Bagian Foto Dokumentasi Finishing -->
-        <h4 class="mt-4">Dokumentasi Finishing</h4>
-        <div class="row">
-            <?php foreach ($dokumentasi_finishing as $file): ?>
-                <div class="col-md-3 mb-3">
-                    <?php 
-                    $file_extension = pathinfo($file['foto'], PATHINFO_EXTENSION);
-                    if (in_array($file_extension, ['mp4', 'mov'])) { ?>
-                        <video width="300" controls>
-                            <source src="../<?= htmlspecialchars($file['foto']) ?>" type="video/<?= $file_extension ?>">
-                            Your browser does not support the video tag.
-                        </video>
-                    <?php } else { ?>
-                        <img src="../<?= htmlspecialchars($file['foto']) ?>" class="img-thumbnail" alt="Dokumentasi Finishing" width="300px">
-                    <?php } ?>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- Bagian Foto Dokumentasi Serah Terima -->
-        <h4 class="mt-4">Dokumentasi Serah Terima</h4>
-        <div class="row">
-            <?php foreach ($dokumentasi_serah_terima as $file): ?>
-                <div class="col-md-3 mb-3">
-                    <?php 
-                    $file_extension = pathinfo($file['foto'], PATHINFO_EXTENSION);
-                    if (in_array($file_extension, ['mp4', 'mov'])) { ?>
-                        <video width="300" controls>
-                            <source src="../<?= htmlspecialchars($file['foto']) ?>" type="video/<?= $file_extension ?>">
-                            Your browser does not support the video tag.
-                        </video>
-                    <?php } else { ?>
-                        <img src="../<?= htmlspecialchars($file['foto']) ?>" class="img-thumbnail" alt="Dokumentasi Serah Terima" width="300px">
-                    <?php } ?>
-                </div>
-            <?php endforeach; ?>
-        </div>
 
 
         <!-- Bagian Persiapan -->
@@ -178,19 +99,67 @@ $riwayat_list = $stmt->fetchAll();
                     <th scope="col">Di Update</th>
                     <th scope="col">Nama Barang</th>
                     <th scope="col">Status</th>
+                    <th scope="col">Catatan</th>
                 </tr>
             </thead>
             <tbody>
+                <?php
+                $catatan_persiapan = htmlspecialchars($project['catatan_persiapan']);
+                $rowspan_persiapan = count(array_filter($persiapan_list, function($p) {
+                    return $p['row_status'] == 1;
+                }));
+                ?>
                 <?php foreach ($persiapan_list as $index => $persiapan): ?>
-                <?php if($persiapan['row_status'] == 1) { ?>
+                <?php if ($persiapan['row_status'] == 1) { ?>
                 <tr>
                     <th scope="row"><?= $no_index_1; ?></th>
                     <td><?= htmlspecialchars($persiapan['updated_at']) ?></td>
                     <td><?= htmlspecialchars($persiapan['nama_barang']) ?></td>
                     <td><?= htmlspecialchars($persiapan['status']) ?></td>
+                    <?php if ($no_index_1 == 1) { ?>
+                    <td rowspan="<?= $rowspan_persiapan ?>"><?= $catatan_persiapan ?></td>
+                    <?php } ?>
                 </tr>
                 <?php
                     $no_index_1++;
+                ?>
+                <?php } ?>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <!-- Bagian Selesai -->
+        <h4 class="mt-4">Selesai</h4>
+        <table class="table table-bordered">
+            <thead class="table-primary">
+                <tr>
+                    <th scope="col">No.</th>
+                    <th scope="col">Di Update</th>
+                    <th scope="col">Nama Barang</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Catatan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $catatan_finish = htmlspecialchars($project['catatan_finish']);
+                $rowspan_selesai = count(array_filter($persiapan_list, function($p) {
+                    return $p['row_status'] == 2;
+                }));
+                ?>
+                <?php foreach ($persiapan_list as $index => $persiapan): ?>
+                <?php if ($persiapan['row_status'] == 2) { ?>
+                <tr>
+                    <th scope="row"><?= $no_index_2; ?></th>
+                    <td><?= htmlspecialchars($persiapan['updated_at']) ?></td>
+                    <td><?= htmlspecialchars($persiapan['nama_barang']) ?></td>
+                    <td><?= htmlspecialchars($persiapan['status']) ?></td>
+                    <?php if ($no_index_2 == 1) { ?>
+                    <td rowspan="<?= $rowspan_selesai ?>"><?= $catatan_finish ?></td>
+                    <?php } ?>
+                </tr>
+                <?php
+                    $no_index_2++;
                 ?>
                 <?php } ?>
                 <?php endforeach; ?>
@@ -208,10 +177,16 @@ $riwayat_list = $stmt->fetchAll();
                     <th scope="col">Jumlah Total</th>
                     <th scope="col">Sudah Dikerjakan</th>
                     <th scope="col">Status</th>
+                    <th scope="col">Catatan</th>
                 </tr>
             </thead>
             <tbody>
+                <?php
+                $catatan_pekerjaan = htmlspecialchars($project['catatan_pekerjaan']);
+                $rowspan_pekerjaan = count($pekerjaan_list);
+                ?>
                 <?php foreach ($pekerjaan_list as $index => $pekerjaan): ?>
+                <?php if ($persiapan['row_status'] == 1) { ?>
                 <tr>
                     <th scope="row"><?= $index + 1 ?></th>
                     <td><?= htmlspecialchars($pekerjaan['updated_at']) ?></td>
@@ -219,59 +194,105 @@ $riwayat_list = $stmt->fetchAll();
                     <td><?= htmlspecialchars($pekerjaan['jumlah_total']) ?></td>
                     <td><?= htmlspecialchars($pekerjaan['sudah_dikerjakan']) ?></td>
                     <td><?= htmlspecialchars($pekerjaan['status']) ?></td>
+                    <?php if ($index == 0) { ?>
+                    <td rowspan="<?= $rowspan_pekerjaan ?>"><?= $catatan_pekerjaan ?></td>
+                    <?php } ?>
                 </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-
-        <!-- Bagian Selesai -->
-        <h4 class="mt-4">Selesai</h4>
-        <table class="table table-bordered">
-            <thead class="table-primary">
-                <tr>
-                    <th scope="col">No.</th>
-                    <th scope="col">Di Update</th>
-                    <th scope="col">Nama Barang</th>
-                    <th scope="col">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($persiapan_list as $index => $persiapan): ?>
-                <?php if($persiapan['row_status'] == 2) { ?>
-                <tr>
-                    <th scope="row"><?= $no_index_2; ?></th>
-                    <td><?= htmlspecialchars($persiapan['updated_at']) ?></td>
-                    <td><?= htmlspecialchars($persiapan['nama_barang']) ?></td>
-                    <td><?= htmlspecialchars($persiapan['status']) ?></td>
-                </tr>
-                <?php
-                    $no_index_2++;
-                ?>
                 <?php } ?>
                 <?php endforeach; ?>
             </tbody>
         </table>
 
-        <!-- Bagian Riwayat -->
-        <h4 class="mt-4">Riwayat</h4>
-        <table id="riwayatTable" class="table table-bordered">
+        <!-- Bagian Pengeluaran -->
+        <h4 class="mt-4">Pengeluaran</h4>
+        <table id="pengeluaranTable" class="table table-bordered">
             <thead class="table-primary">
                 <tr>
                     <th scope="col">No.</th>
                     <th scope="col">Waktu Diupdate</th>
-                    <th scope="col">Deskripsi Perubahan</th>
+                    <th scope="col">Nama Barang</th>
+                    <th scope="col">Jumlah</th>
+                    <th scope="col">Harga</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($riwayat_list as $index => $riwayat): ?>
+                <?php
+                $catatan_pengeluaran = htmlspecialchars($project['catatan_persiapan']) . ', ' . htmlspecialchars($project['catatan_pekerjaan']) . ', ' . htmlspecialchars($project['catatan_finish']);
+                $rowspan_pengeluaran = count($pengeluaran_list);
+                ?>
+                <?php foreach ($pengeluaran_list as $index => $pengeluaran): ?>
                 <tr>
                     <th scope="row"><?= $index + 1 ?></th>
-                    <td><?= htmlspecialchars($riwayat['updated_at']) ?></td>
-                    <td><?= htmlspecialchars($riwayat['edited']) ?></td>
+                    <td><?= htmlspecialchars($pengeluaran['updated_at']) ?></td>
+                    <td><?= htmlspecialchars($pengeluaran['nama_barang']) ?></td>
+                    <td><?= htmlspecialchars($pengeluaran['qty']) ?></td>
+                    <td><?= htmlspecialchars($pengeluaran['harga']) ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
+
+        <!-- Bagian Pekerjaan -->
+        <h4 class="mt-4">Riwayat Pekerjaan</h4>
+        <table class="table table-bordered">
+            <thead class="table-primary">
+                <tr>
+                    <th scope="col">No.</th>
+                    <th scope="col">Di Update</th>
+                    <th scope="col">Nama Pekerjaan</th>
+                    <th scope="col">Jumlah Total</th>
+                    <th scope="col">Sudah Dikerjakan</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Catatan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $catatan_pekerjaan = htmlspecialchars($project['catatan_pekerjaan']);
+                $rowspan_pekerjaan = count($pekerjaan_list);
+                ?>
+                <?php foreach ($pekerjaan_list as $index => $pekerjaan): ?>
+                <?php if ($persiapan['row_status'] == 2) { ?>
+                <tr>
+                    <th scope="row"><?= $index + 1 ?></th>
+                    <td><?= htmlspecialchars($pekerjaan['updated_at']) ?></td>
+                    <td><?= htmlspecialchars($pekerjaan['nama_pekerjaan']) ?></td>
+                    <td><?= htmlspecialchars($pekerjaan['jumlah_total']) ?></td>
+                    <td><?= htmlspecialchars($pekerjaan['sudah_dikerjakan']) ?></td>
+                    <td><?= htmlspecialchars($pekerjaan['status']) ?></td>
+                    <?php if ($index == 0) { ?>
+                    <td rowspan="<?= $rowspan_pekerjaan ?>"><?= $catatan_pekerjaan ?></td>
+                    <?php } ?>
+                </tr>
+                <?php } ?>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <!-- Bagian Foto Dokumentasi (Persiapan, Pekerjaan, Finishing, Serah Terima) -->
+        <h4 class="mt-4">Dokumentasi Proyek</h4>
+        <hr>
+        <div class="row">
+            <?php
+                $all_dokumentasi = array_merge($dokumentasi_persiapan, $dokumentasi_pekerjaan, $dokumentasi_finishing, $dokumentasi_serah_terima);
+            ?>
+            <?php foreach ($all_dokumentasi as $file): ?>
+                <div class="col-md-3 mb-3">
+                    <?php 
+                    $file_extension = pathinfo($file['foto'], PATHINFO_EXTENSION);
+                    if (in_array($file_extension, ['mp4', 'mov'])) { ?>
+                        <a href="../<?= htmlspecialchars($file['foto']) ?>" download class="btn btn-primary mb-2">Download Video</a>
+                        <video width="300" controls>
+                            <source src="../<?= htmlspecialchars($file['foto']) ?>" type="video/<?= $file_extension ?>">
+                            Your browser does not support the video tag.
+                        </video>
+                    <?php } else { ?>
+                        <a href="../<?= htmlspecialchars($file['foto']) ?>" download class="btn btn-primary mb-2">Download Gambar</a>
+                        <img src="../<?= htmlspecialchars($file['foto']) ?>" class="img-thumbnail" alt="Dokumentasi" width="300px">
+                    <?php } ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
 
     </div>
     <br>  
@@ -286,7 +307,7 @@ $riwayat_list = $stmt->fetchAll();
     <!-- Inisialisasi DataTables -->
     <script>
         $(document).ready(function() {
-            $('#riwayatTable').DataTable();
+            $('#pengeluaranTable').DataTable();
         });
     </script>
     

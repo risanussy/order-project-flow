@@ -129,6 +129,9 @@ $project = $stmt->fetch();
             <li class="nav-item">
                 <a class="nav-link disabled" aria-disabled="true">Step 4</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" aria-disabled="true">Step 5</a>
+            </li>
         </ul>
         <br>
         <div class="w-100 card shadow px-2 py-5">
@@ -176,7 +179,7 @@ $project = $stmt->fetch();
                             <label>Foto Pekerjaan Finishing</label>
                             <div id="foto-container">
                                 <div class="input-group mb-3">
-                                    <input type="file" name="foto_finish[]" class="form-control" required>
+                                    <input type="file" name="foto_finish[]" class="form-control">
                                     <button class="btn btn-danger remove-foto" type="button">Hapus</button>
                                 </div>
                             </div>
